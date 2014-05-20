@@ -24,13 +24,10 @@ class ChatConnection(SockJSConnection):
     users=dict()
     def on_open(self, info):
         # Send that someone joined
-        """global inc
-        inc+=1
-        self.users[self]="user"+str(inc) 
+        """
         self.send_text("System","Someone joined.")
         
-        self.participants.add(self)
-        print self.users"""
+        self.participants.add(self)"""
 
     def on_message(self, message):
         msg = json.loads(message)
@@ -78,8 +75,8 @@ def main():
     # 2. Create Tornado application
     app = tornado.web.Application(
             [(r"/", IndexHandler)] + ChatRouter.urls,
-    template_path=os.path.join(PATH_ROOT, 'templates'),
-    static_path=os.path.join(PATH_ROOT, 'static'),        
+    template_path=os.path.join(PATH_ROOT, 'example_chat/templates'),
+    static_path=os.path.join(PATH_ROOT, 'example_chat/static'),        
     )
 
     # 3. Make Tornado app listen on port 8080
