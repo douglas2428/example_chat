@@ -11,17 +11,19 @@ import json
 
 PATH_ROOT=os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)),os.pardir))
 
+
 class IndexHandler(tornado.web.RequestHandler):
     """Regular HTTP handler to serve the chatroom page"""
     def get(self):
         self.render('index.html')
 
-inc=int(0)
 class ChatConnection(SockJSConnection):
     """Chat connection implementation"""
     # Class level variable
     participants = set()
     users=dict()
+    room_by_user=dict()
+
     def on_open(self, info):
         # Send that someone joined
         """
@@ -30,6 +32,9 @@ class ChatConnection(SockJSConnection):
         self.participants.add(self)"""
 
     def on_message(self, message):
+
+        print self
+
         msg = json.loads(message)
         data_type = msg['data_type']
         data=msg['data']
@@ -52,17 +57,40 @@ class ChatConnection(SockJSConnection):
         self.broadcast(self.participants, json.dumps({'data_type': 'send_text', 'data': data}))     
 
     def authenticate(self,data):
-        if not [key for key in self.users.keys() if self.users[key] == data['username']]:
+        room = get_room(data['lat'], data['lon'])
+        
+        if room != None and not [key for key in self.users.keys() if self.users[key] == data['username']]:
             self.users[self]=data['username']
-            data={'username':data['username'],'isAvailable':True}
+
+
+            print data['lat'], data['lon']
+            print "Entrara a:"
+            print room
+
+            data={'username':data['username'],'isAvailable':True,'room':room}
             self.send_text("System",data['username']+" has joined")
         else:
-            data={'username':data['username'],'isAvailable':False}    
+            data={'username':data['username'],'isAvailable':False,'room':room}    
             
         self.participants.add(self)
         self.send(json.dumps({'data_type': 'auth', 'data': data}))        
-        
-            
+         
+    #  NO sockjs functions      
+    def get_room(lat, lon):
+        try:
+            lat, lon = int(float(lat)*100)/100.0, int(float(lon)*100)/100.0
+
+            return "lat:{0:.2f},{1:.2f}|lon:{2:.2f},{3:.2f}".format(lat+0.01, lat, lon+0.01, lon)
+        except Exception as e:
+            print str(e)
+            return None            
+
+    def join_room(username, room):
+        pass
+        #room_by_user[]
+
+    def leave_room(username):
+        pass
 
 def main():
 

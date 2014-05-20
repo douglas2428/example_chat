@@ -17,7 +17,7 @@
       /*---------------authenticate-------------------*/
       function check(data) {
         if(data.isAvailable == false) {
-          userName = prompt('El usuario "'+data.username+'" ya fue seleccionado. Ingrese otro');
+          userName = prompt('El usuario "'+data.username+'" ya fue seleccionado(o la cagaste al ingresar lat/lon). Ingrese otro');
           authenticate();
         }
       }
@@ -26,7 +26,11 @@
         while(userName == null|| userName=='') {
           userName = prompt('Inserta nombre de usuario');
         }
-        send({"data_type":"auth","data":{'username':userName}})
+
+        var lat = prompt("Ingrese una latitud (valida por favor, da ladilla validar eso)");
+        var lon = prompt("Ingrese una longitud (valida por favor, da ladilla validar eso)");
+
+        send({"data_type":"auth","data":{'username':userName,'lat':lat, 'lon':lon}})
       }
       /*---------------/authenticate-------------------*/
 
@@ -52,9 +56,14 @@
           data=msg['data'];
           data_type=msg['data_type'];
 
+          console.log(data);
+          console.log(data.room);
+          $("#title").html("Chat! room: '" + data.room + "'");
+
           if(data_type=="send_text")
             log(data.username+': '+data.text);
           else if(data_type=="auth"){
+
             if(!('error' in data))
                 check(data); 
           }
