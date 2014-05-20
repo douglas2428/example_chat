@@ -1,0 +1,69 @@
+div#main_container {
+  position: absolute;
+  top: 80px;
+  left: 10px;
+  width: 835px;
+  height: 500px;
+  background-color: #00CCFF;
+  border-radius: 10px;
+}
+div#users {
+  position: absolute;
+  top: 10px;
+  left: 625px;
+  width: 200px;
+  height: 335px;
+  background-color: #EEEEEE;
+  overflow: auto;
+  border-radius: 5px;
+  text-align: center;
+}  
+div#chat_tabs {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 610px;
+  height: 335px;
+  background-color: #FFFFFF;
+  overflow: auto;
+  border-radius: 5px;
+}
+div#message_entry {
+  position: absolute;
+  top: 430px;
+  left: 10px;
+  width: 625px;
+  height: 30px;
+  margin-left: 10px;
+  background-color: #00CCFF;
+}
+div#private_messages {
+  position: absolute;
+  left: 20px;
+  top: 525px;
+  width: 815px;
+  height: 280px;
+  background-color: #FFFFFF;
+  color: #555500;
+  overflow: auto;
+  border-radius: 5px;
+}
+input {
+  font-family: Verdana;
+  font-size: 12pt;
+  font-weight: 500;
+}
+input#message {
+  width: 400px;
+}
+tr.selectable {
+  cursor: pointer;
+}
+tr.selectable:hover td {
+  background-color: #FFFFAA;
+}
+/*-----------------*/
+.close-tab{
+	margin-left:20px;
+    
+  }
