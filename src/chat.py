@@ -38,7 +38,7 @@ class ChatConnection(SockJSConnection):
 
 
         if data_type=="send_text":
-            self.send_text(self.users[self], self.room_by_user[username], data)
+            self.send_text(self.users[self], self.room_by_user[self.users[self]], data)
         elif data_type=="auth":
             self.authenticate(data)
 
