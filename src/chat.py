@@ -5,9 +5,10 @@
 import os.path
 import tornado.ioloop
 import tornado.web
-from sockjs.tornado import SockJSRouter,SockJSConnection
 import sys
 import json
+from sockjs.tornado import SockJSRouter
+from sockjs.tornado import SockJSConnection
 
 PATH_ROOT=os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)),os.pardir))
 
@@ -34,13 +35,14 @@ class ChatConnection(SockJSConnection):
     def on_message(self, message):
         msg = json.loads(message)
         data_type = msg['data_type']
-        data=msg['data']
 
         if data_type=="send_text":
             target = msg['target'] if 'target' in msg else None
-            self.send_text(self.users[self], self.room_by_user[self.users[self]], data, target)
+            self.send_text(self.users[self], self.room_by_user[self.users[self]], msg['data'], target)
         elif data_type=="auth":
-            self.authenticate(data)
+            self.authenticate(msg['data'])
+        elif data_type=="change_location":
+            self.change_room(self, msg)
 
     def on_close(self):
         # Remove client from the clients list and broadcast leave message
@@ -73,6 +75,7 @@ class ChatConnection(SockJSConnection):
             return None        
 
     def join_room(self, client, username, room):
+        
         if room != None and not [key for key in self.users.keys() if self.users[key] == username]:
             self.users[client]=username
             self.room_by_user[username] = room
@@ -100,6 +103,14 @@ class ChatConnection(SockJSConnection):
         self.send_list_users(room)
 
         self.send_text("System", room, username+" left.")
+
+    def change_room(self, client, data):
+        username = self.users[client]
+        room = self.get_room(data['lat'], data['lon'])
+
+        self.leave_room(client)
+
+        self.join_room(client, username, room)
 
 
 def main():

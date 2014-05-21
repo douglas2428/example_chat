@@ -121,6 +121,12 @@
         return false;
       });
 
+      $('#change_location').click(function() {
+        var lat = prompt("Ingrese una latitud (valida por favor, da ladilla validar eso)");
+        var lon = prompt("Ingrese una longitud (valida por favor, da ladilla validar eso)");
+        send({'data_type':'change_location', 'lat':lat, 'lon':lon});
+      });
+
       $(document).on('click','p.user-connected',function() {
         target = $(this).attr('target');
 
