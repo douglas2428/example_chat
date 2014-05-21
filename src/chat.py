@@ -38,7 +38,8 @@ class ChatConnection(SockJSConnection):
 
 
         if data_type=="send_text":
-            self.send_text(self.users[self], self.room_by_user[self.users[self]], data)
+            target = msg['target'] if 'target' in msg else None
+            self.send_text(self.users[self], self.room_by_user[self.users[self]], data, target)
         elif data_type=="auth":
             self.authenticate(data)
 
@@ -46,9 +47,11 @@ class ChatConnection(SockJSConnection):
         # Remove client from the clients list and broadcast leave message
         self.leave_room(self)
         
-    def send_text(self, name_from, room, text):
-        data={'username':name_from,'text':text}
-        self.broadcast(self.participants[room], json.dumps({'data_type': 'send_text', 'data': data}))     
+    def send_text(self, username, room, text, target=None):
+        data={'username':username,'text':text}
+
+        target = [user for user in self.participants[room] if self.users[username] == target] if target else self.participants[room]
+        self.broadcast(target, json.dumps({'data_type': 'send_text', 'data': data}))     
 
     def send_list_users(self, room):
         data = [self.users[user] for user in self.participants[room]]
@@ -73,7 +76,7 @@ class ChatConnection(SockJSConnection):
         except Exception as e:
             print str(e)
             return None        
-            
+
     def join_room(self, client, username, room):
         if room != None and not [key for key in self.users.keys() if self.users[key] == username]:
             self.users[client]=username

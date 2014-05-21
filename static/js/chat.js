@@ -1,6 +1,7 @@
  $(function() {
       var conn = null;
       var userName = null;
+      var target = null;
 
       function send(msg){
         if(conn==null)
@@ -64,9 +65,9 @@
             log(data.username+': '+data.text);
           else if(data_type=='send_list_users')
           {
-            $("#users_list").html("");
+            //$("#users_list").html("");
             data.forEach(function(username) {
-              $("#users_list").append("<p>" + username + "</p>");
+              $("#users_list").append("<p class='user-connected' target='" + username + "'>" + username + "</p>");
             });
           }
           else if(data_type=="auth"){
@@ -116,6 +117,13 @@
 
         update_ui();
         return false;
+      });
+
+      $(document).on('click','p.user-connected',function() {
+        console.log("target");
+        target = $(this).attr('target');
+        console.log(target);
+        $("#user-target").val(target);
       });
 
       $('form').submit(function() {
