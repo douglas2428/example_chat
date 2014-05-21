@@ -95,7 +95,7 @@ class ChatConnection(SockJSConnection):
         self.participants[room].remove(client)
         del self.users[client]
 
-        self.send_text("System", room, username+" left.", room)
+        self.send_text("System", room, username+" left.")
 
 
 def main():
