@@ -20,7 +20,7 @@ class IndexHandler(tornado.web.RequestHandler):
 class ChatConnection(SockJSConnection):
     """Chat connection implementation"""
     # Class level variable
-    participants = dict()#set()
+    participants = dict()
     users = dict()
     room_by_user = dict()
 
@@ -38,7 +38,7 @@ class ChatConnection(SockJSConnection):
 
 
         if data_type=="send_text":
-            self.send_text(self.users[self],data)
+            self.send_text(self.users[self], self.room_by_user[username], data)
         elif data_type=="auth":
             self.authenticate(data)
 
@@ -46,7 +46,7 @@ class ChatConnection(SockJSConnection):
         # Remove client from the clients list and broadcast leave message
         self.leave_room(self)
         
-    def send_text(self,name_from,text,room='test'):
+    def send_text(self, name_from, room, text):
         data={'username':name_from,'text':text}
         self.broadcast(self.participants[room], json.dumps({'data_type': 'send_text', 'data': data}))     
 
@@ -70,7 +70,7 @@ class ChatConnection(SockJSConnection):
             self.participants[room].add(client)
         
             data={'username':username,'isAvailable':True,'room':room}
-            self.send_text("System",username+" has joined")
+            self.send_text("System", room, username+" has joined")
         else:
             data={'username':username,'isAvailable':False,'room':room}    
             
@@ -95,7 +95,7 @@ class ChatConnection(SockJSConnection):
         self.participants[room].remove(client)
         del self.users[client]
 
-        self.send_text("System",username+" left.", room)
+        self.send_text("System", room, username+" left.", room)
 
 
 def main():
