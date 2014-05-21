@@ -36,7 +36,6 @@ class ChatConnection(SockJSConnection):
         data_type = msg['data_type']
         data=msg['data']
 
-
         if data_type=="send_text":
             target = msg['target'] if 'target' in msg else None
             self.send_text(self.users[self], self.room_by_user[self.users[self]], data, target)
@@ -50,8 +49,10 @@ class ChatConnection(SockJSConnection):
     def send_text(self, username, room, text, target=None):
         data={'username':username,'text':text}
 
-        target = [user for user in self.participants[room] if self.users[username] == target] if target else self.participants[room]
-        self.broadcast(target, json.dumps({'data_type': 'send_text', 'data': data}))     
+        is_private = target!=None
+        target = [user for user in self.participants[room] if self.users[user] in (target, username)] if target else self.participants[room]
+
+        self.broadcast(target, json.dumps({'data_type': 'send_text', 'data': data, 'private':is_private}))     
 
     def send_list_users(self, room):
         data = [self.users[user] for user in self.participants[room]]
@@ -59,13 +60,7 @@ class ChatConnection(SockJSConnection):
 
     def authenticate(self, data):
         room = self.get_room(data['lat'], data['lon'])
-        
-        print data['username'], "Entrara a:"
-        print data['lat'], data['lon']
-        print room
-
         self.join_room(self, data['username'], room)
-         
 
     #  NO sockjs functions      
     def get_room(self, lat, lon):

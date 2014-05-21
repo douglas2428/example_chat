@@ -52,15 +52,15 @@
 </div>
 <div id="main_container">
       <div id="users">
-        <label><b>users online</b></label>
+        <label><b>users online </b><b id="user-target">ALL</b></label>
+        <p class='user-connected'>Todos</p>
         <div id="users_list">
-          <p class='user-connected' target='username'>username</p>
         </div>
       </div>  
       <div id="chat_tabs" class="tabbable">
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
           <li id="li_chat_screen" onclick="changeTarget(null)" class="active">
-            <a href="#chat_screen" data-toggle="tab">GLOBAL CHAT</a><p id="user-target">ALL</p>
+            <a href="#chat_screen" data-toggle="tab">GLOBAL CHAT</a>
           </li>
         </ul>
         <div id="chat_tab_content" class="tab-content">

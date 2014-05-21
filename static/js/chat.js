@@ -57,15 +57,17 @@
           data=msg['data'];
           data_type=msg['data_type'];
 
-          console.log(data);
-          console.log(data.room);
           $("#title").html("Chat! room: '" + data.room + "'");
 
-          if(data_type=="send_text")
-            log(data.username+': '+data.text);
+          if(data_type=="send_text") {
+            if(msg['private'])
+              log(data.username+'(privado): '+data.text);
+            else
+              log(data.username+': '+data.text);
+          }
           else if(data_type=='send_list_users')
           {
-            //$("#users_list").html("");
+            $("#users_list").html("");
             data.forEach(function(username) {
               $("#users_list").append("<p class='user-connected' target='" + username + "'>" + username + "</p>");
             });
@@ -120,10 +122,14 @@
       });
 
       $(document).on('click','p.user-connected',function() {
-        console.log("target");
         target = $(this).attr('target');
+
         console.log(target);
-        $("#user-target").val(target);
+        
+        if(target != null)
+          $("#user-target").html(target);
+        else
+          $("#user-target").html("Todos");
       });
 
       $('form').submit(function() {
@@ -131,9 +137,11 @@
         if(text=="")
           return false;
         
-        send({'data_type':'send_text',
-             'data':text});
-        
+        if(target != null)
+          send({'data_type':'send_text', 'data':text, 'target':target});
+        else
+          send({'data_type':'send_text', 'data':text});
+
         $('#message').val('').focus();
         return false;
       });
