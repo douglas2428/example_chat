@@ -20,9 +20,9 @@ class IndexHandler(tornado.web.RequestHandler):
 class ChatConnection(SockJSConnection):
     """Chat connection implementation"""
     # Class level variable
-    participants = set()
-    users=dict()
-    room_by_user=dict()
+    participants = dict()#set()
+    users = dict()
+    room_by_user = dict()
 
     def on_open(self, info):
         # Send that someone joined
@@ -32,9 +32,6 @@ class ChatConnection(SockJSConnection):
         self.participants.add(self)"""
 
     def on_message(self, message):
-
-        print self
-
         msg = json.loads(message)
         data_type = msg['data_type']
         data=msg['data']
@@ -47,50 +44,59 @@ class ChatConnection(SockJSConnection):
 
     def on_close(self):
         # Remove client from the clients list and broadcast leave message
-        self.participants.remove(self)
-        username=self.users[self]
-        del self.users[self]
-        self.send_text("System",username+" left.")
-
-    def send_text(self,name_from,text):
-        data={'username':name_from,'text':text}
-        self.broadcast(self.participants, json.dumps({'data_type': 'send_text', 'data': data}))     
-
-    def authenticate(self,data):
-        room = get_room(data['lat'], data['lon'])
+        self.leave_room(self)
         
-        if room != None and not [key for key in self.users.keys() if self.users[key] == data['username']]:
-            self.users[self]=data['username']
+    def send_text(self,name_from,text,room='test'):
+        data={'username':name_from,'text':text}
+        self.broadcast(self.participants[room], json.dumps({'data_type': 'send_text', 'data': data}))     
 
+    def authenticate(self, data):
+        room = self.get_room(data['lat'], data['lon'])
+        
+        print data['username'], "Entrara a:"
+        print data['lat'], data['lon']
+        print room
 
-            print data['lat'], data['lon']
-            print "Entrara a:"
-            print room
-
-            data={'username':data['username'],'isAvailable':True,'room':room}
-            self.send_text("System",data['username']+" has joined")
-        else:
-            data={'username':data['username'],'isAvailable':False,'room':room}    
-            
-        self.participants.add(self)
-        self.send(json.dumps({'data_type': 'auth', 'data': data}))        
+        self.join_room(self, data['username'], room)
          
+
+    def join_room(self, client, username, room):
+        if room != None and not [key for key in self.users.keys() if self.users[key] == username]:
+            self.users[client]=username
+            self.room_by_user[username] = room
+            
+            if room not in self.participants:
+                self.participants[room] = set()
+            self.participants[room].add(client)
+        
+            data={'username':username,'isAvailable':True,'room':room}
+            self.send_text("System",username+" has joined")
+        else:
+            data={'username':username,'isAvailable':False,'room':room}    
+            
+        self.send(json.dumps({'data_type': 'auth', 'data': data}))
+
+
+
     #  NO sockjs functions      
-    def get_room(lat, lon):
+    def get_room(self, lat, lon):
         try:
             lat, lon = int(float(lat)*100)/100.0, int(float(lon)*100)/100.0
 
             return "lat:{0:.2f},{1:.2f}|lon:{2:.2f},{3:.2f}".format(lat+0.01, lat, lon+0.01, lon)
         except Exception as e:
             print str(e)
-            return None            
+            return None        
 
-    def join_room(username, room):
-        pass
-        #room_by_user[]
+    def leave_room(self, client):
+        username = self.users[client]
+        room = self.room_by_user[username]
 
-    def leave_room(username):
-        pass
+        self.participants[room].remove(client)
+        del self.users[client]
+
+        self.send_text("System",username+" left.", room)
+
 
 def main():
 
