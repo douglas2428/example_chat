@@ -50,6 +50,10 @@ class ChatConnection(SockJSConnection):
         data={'username':name_from,'text':text}
         self.broadcast(self.participants[room], json.dumps({'data_type': 'send_text', 'data': data}))     
 
+    def send_list_users(self, room):
+        data = [self.users[user] for user in self.participants[room]]
+        self.broadcast(self.participants[room], json.dumps({'data_type': 'send_list_users', 'data': data}))     
+
     def authenticate(self, data):
         room = self.get_room(data['lat'], data['lon'])
         
@@ -60,24 +64,6 @@ class ChatConnection(SockJSConnection):
         self.join_room(self, data['username'], room)
          
 
-    def join_room(self, client, username, room):
-        if room != None and not [key for key in self.users.keys() if self.users[key] == username]:
-            self.users[client]=username
-            self.room_by_user[username] = room
-            
-            if room not in self.participants:
-                self.participants[room] = set()
-            self.participants[room].add(client)
-        
-            data={'username':username,'isAvailable':True,'room':room}
-            self.send_text("System", room, username+" has joined")
-        else:
-            data={'username':username,'isAvailable':False,'room':room}    
-            
-        self.send(json.dumps({'data_type': 'auth', 'data': data}))
-
-
-
     #  NO sockjs functions      
     def get_room(self, lat, lon):
         try:
@@ -87,6 +73,24 @@ class ChatConnection(SockJSConnection):
         except Exception as e:
             print str(e)
             return None        
+            
+    def join_room(self, client, username, room):
+        if room != None and not [key for key in self.users.keys() if self.users[key] == username]:
+            self.users[client]=username
+            self.room_by_user[username] = room
+            
+            if room not in self.participants:
+                self.participants[room] = set()
+            self.participants[room].add(client)
+            
+            self.send_list_users(room)
+            
+            data={'username':username,'isAvailable':True,'room':room}
+            self.send_text("System", room, username+" has joined")
+        else:
+            data={'username':username,'isAvailable':False,'room':room}    
+            
+        self.send(json.dumps({'data_type': 'auth', 'data': data}))
 
     def leave_room(self, client):
         username = self.users[client]
@@ -94,6 +98,8 @@ class ChatConnection(SockJSConnection):
 
         self.participants[room].remove(client)
         del self.users[client]
+
+        self.send_list_users(room)
 
         self.send_text("System", room, username+" left.")
 

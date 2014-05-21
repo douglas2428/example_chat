@@ -62,6 +62,13 @@
 
           if(data_type=="send_text")
             log(data.username+': '+data.text);
+          else if(data_type=='send_list_users')
+          {
+            $("#users_list").html("");
+            data.forEach(function(username) {
+              $("#users_list").append("<p>" + username + "</p>");
+            });
+          }
           else if(data_type=="auth"){
 
             if(!('error' in data))
